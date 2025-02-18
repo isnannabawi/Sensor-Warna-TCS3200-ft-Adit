@@ -17,6 +17,7 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 bool ledState = false;
+bool blinkstate = 0;
 
 void setup() {
     pinMode(S0, OUTPUT);
@@ -49,17 +50,18 @@ void loop() {
         digitalWrite(LED_PIN, ledState ? HIGH : LOW);
         delay(300); // Debounce delay
     }
+    blinkstate = !blinkstate;
     
     int red = getRed();
     int green = getGreen();
     int blue = getBlue();
     float batteryVoltage = getBatteryVoltage();
-    int batteryLevel = map(batteryVoltage * 100, 300, 420, 0, 4);
+    int batteryLevel = map(batteryVoltage * 100, 300, 390, 0, 4);
     batteryLevel = constrain(batteryLevel, 0, 4);
     
     String colorName = identifyColor(red, green, blue);
     
-    Serial.print("R: "); Serial.print(red);
+    Serial.print(" R: "); Serial.print(red);
     Serial.print(" G: "); Serial.print(green);
     Serial.print(" B: "); Serial.println(blue);
     Serial.print(" Color: "); Serial.println(colorName);
@@ -67,7 +69,9 @@ void loop() {
     
     display.clearDisplay();
     display.setCursor(0, 0);
+    display.setTextSize(0);
     display.print("TCS3200");
+    display.setTextSize(2);
 //    display.setCursor(0, 10);
 //    display.print("R: "); display.print(red);
 //    display.setCursor(0, 20);
@@ -76,8 +80,8 @@ void loop() {
 //    display.print("B: "); display.print(blue);
     display.setCursor(0, 40);
 //    display.print("Color: ");
-    display.print(colorName);
-    display.setTextSize(2);
+    if(blinkstate) display.print(colorName);
+
     drawFlashlightIndicator(95, 0, ledState);
     drawBatteryIndicator(110, 0, batteryLevel);
     display.display();
@@ -105,7 +109,7 @@ int getBlue() {
 
 float getBatteryVoltage() {
     int rawValue = analogRead(BATTERY_PIN);
-    float voltage = (rawValue / 1023.0) * 5.0 * 2; // Voltage divider correction
+    float voltage = (rawValue / 1023.0) * 5 * 2; // Voltage divider correction
     return voltage;
 }
 
